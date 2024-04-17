@@ -2,17 +2,25 @@
 
 #include <numeric>
 
-double HeuristicModel::AIRPORTS_MISMATCH_FINE = 1e6;
-double HeuristicModel::FLIGHTS_INTERSECTION_FINE = 1e3;
+double HeuristicModel::AIRPORTS_MISMATCH_FINE = 1e9;
+double HeuristicModel::FLIGHTS_INTERSECTION_FINE = 1e6;
+double HeuristicModel::SEATS_FINE = 1e3;
+double HeuristicModel::FLIGHTS_COST = 1e-4;
+double HeuristicModel::STAY_COST = 1e-2;
 
-HeuristicModel::HeuristicModel(const std::shared_ptr<std::vector<Aircraft>>& aircrafts)
-    : aircrafts_(aircrafts) {}
+HeuristicModel::HeuristicModel(const std::shared_ptr<std::vector<Aircraft>>& aircrafts,
+                               const std::shared_ptr<std::vector<Airport>>& airports,
+                               int hours_in_cycle)
+    : aircrafts_(aircrafts),
+      end_points_(std::vector<AircraftEndPoints>(aircrafts->size(), AircraftEndPoints{airports, hours_in_cycle})),
+      flights_cost_(aircrafts) {}
 
 void HeuristicModel::SetAircraftToFlight(int aircraft, const Flight& flight) {
     seats_fine_ += std::max(0, flight.min_passengers - (*aircrafts_)[aircraft].seats);
 
     flights_at_times_.SetAircraftToFlight(aircraft, flight);
     end_points_[aircraft].SetFlight(flight);
+    flights_cost_.SetAircraftToFlight(aircraft, flight);
 }
 
 void HeuristicModel::RemoveAircraftFromFlight(int aircraft, const Flight& flight) {
@@ -20,6 +28,7 @@ void HeuristicModel::RemoveAircraftFromFlight(int aircraft, const Flight& flight
 
     flights_at_times_.RemoveAircraftFromFlight(aircraft, flight);
     end_points_[aircraft].RemoveFlight(flight);
+    flights_cost_.RemoveAircraftFromFlight(aircraft, flight);
 }
 
 double HeuristicModel::GetTotalFine() const {
@@ -29,9 +38,17 @@ double HeuristicModel::GetTotalFine() const {
                                                [](int64_t acc, const AircraftEndPoints& value){
       return acc + value.GetTotalFine();
     });
-    return AIRPORTS_MISMATCH_FINE * airport_mismatch
-            + FLIGHTS_INTERSECTION_FINE * flights_at_times_.GetTotalFine()
-            + seats_fine_;
+    int64_t total_stay_cost = std::accumulate(end_points_.begin(),
+                                              end_points_.end(),
+                                              0,
+                                              [](int64_t acc, const AircraftEndPoints& value){
+        return acc + value.GetStayCost();
+    });
+    return airport_mismatch * AIRPORTS_MISMATCH_FINE
+            + flights_at_times_.GetTotalFine() * FLIGHTS_INTERSECTION_FINE
+            + seats_fine_ * SEATS_FINE
+            + flights_cost_.GetTotalFine() * FLIGHTS_COST
+            + total_stay_cost * STAY_COST;
 }
 
 void HeuristicModel::FlightsAtTimes::SetAircraftToFlight(int aircraft, const Flight& flight) {
@@ -57,24 +74,28 @@ int HeuristicModel::FlightsAtTimes::GetTotalFine() const {
 }
 
 
-bool HeuristicModel::AircraftEndPoints::EndPoint::operator<(const HeuristicModel::AircraftEndPoints::EndPoint& other) const {
-    if (time_point != other.time_point) {
-        return time_point < other.time_point;
+bool HeuristicModel::AircraftEndPoints::EndPoint::operator<(
+    const HeuristicModel::AircraftEndPoints::EndPoint& other) const {
+    if (time_point == other.time_point) {
+        if (stage == other.stage) {
+            return airport < other.airport;
+        }
+        return stage < other.stage;
     }
-    return stage < other.stage;
+    return time_point < other.time_point;
 }
 
 void HeuristicModel::AircraftEndPoints::SetFlight(const Flight& flight) {
-    EndPoint departure_point({flight.departure_time, FlightStage::kDeparture});
-    EndPoint arrival_point({flight.arrival_time, FlightStage::kArrival});
-    InsertTimePoint(departure_point, flight.departure_airport);
-    InsertTimePoint(arrival_point, flight.arrival_airport);
+    EndPoint departure_point({flight.departure_time, flight.departure_airport, FlightStage::kDeparture});
+    EndPoint arrival_point({flight.arrival_time, flight.arrival_airport, FlightStage::kArrival});
+    InsertTimePoint(departure_point);
+    InsertTimePoint(arrival_point);
 }
 
 void HeuristicModel::AircraftEndPoints::RemoveFlight(const Flight& flight) {
-    auto departure = end_points_.find({flight.departure_time, FlightStage::kDeparture});
-    auto arrival = end_points_.find({flight.arrival_time, FlightStage::kArrival});
+    auto departure = end_points_.find({flight.departure_time, flight.departure_airport, FlightStage::kDeparture});
     RemoveTimePoint(departure);
+    auto arrival = end_points_.find({flight.arrival_time, flight.arrival_airport, FlightStage::kArrival});
     RemoveTimePoint(arrival);
 }
 
@@ -82,20 +103,21 @@ int HeuristicModel::AircraftEndPoints::GetTotalFine() const {
     return mismatches_number_;
 }
 
-bool HeuristicModel::AircraftEndPoints::HasConflict(
-    std::multimap<HeuristicModel::AircraftEndPoints::EndPoint,
-                  HeuristicModel::AircraftEndPoints::AirportAndFine>::iterator left,
-    std::multimap<HeuristicModel::AircraftEndPoints::EndPoint,
-                  HeuristicModel::AircraftEndPoints::AirportAndFine>::iterator right) {
+bool HeuristicModel::AircraftEndPoints::HasStay(
+    std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator left,
+    std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator right) {
     return left->first.stage == FlightStage::kArrival &&
-            right->first.stage == FlightStage::kDeparture &&
-            left->second.airport != right->second.airport;
+            right->first.stage == FlightStage::kDeparture;
 }
 
-std::multimap<HeuristicModel::AircraftEndPoints::EndPoint,
-              HeuristicModel::AircraftEndPoints::AirportAndFine>::iterator HeuristicModel::AircraftEndPoints::GetPrev(
-    std::multimap<HeuristicModel::AircraftEndPoints::EndPoint,
-                  HeuristicModel::AircraftEndPoints::AirportAndFine>::iterator it) {
+bool HeuristicModel::AircraftEndPoints::HasConflict(
+    std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator left,
+    std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator right) {
+    return HasStay(left, right) && left->first.airport != right->first.airport;
+}
+
+std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator HeuristicModel::AircraftEndPoints::GetPrev(
+    std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator it) {
     if (it == end_points_.begin()) {
         it = --end_points_.end();
     } else {
@@ -104,10 +126,8 @@ std::multimap<HeuristicModel::AircraftEndPoints::EndPoint,
     return it;
 }
 
-std::multimap<HeuristicModel::AircraftEndPoints::EndPoint,
-              HeuristicModel::AircraftEndPoints::AirportAndFine>::iterator HeuristicModel::AircraftEndPoints::GetNext(
-    std::multimap<HeuristicModel::AircraftEndPoints::EndPoint,
-                  HeuristicModel::AircraftEndPoints::AirportAndFine>::iterator it) {
+std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator HeuristicModel::AircraftEndPoints::GetNext(
+    std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator it) {
     ++it;
     if (it == end_points_.end()) {
         it = end_points_.begin();
@@ -116,45 +136,63 @@ std::multimap<HeuristicModel::AircraftEndPoints::EndPoint,
 }
 
 void HeuristicModel::AircraftEndPoints::InsertTimePoint(
-        const HeuristicModel::AircraftEndPoints::EndPoint& point, int airport) {
-    auto it = end_points_.insert({point, {airport, 0}});
-    if (end_points_.size() == 1) return;
+        const HeuristicModel::AircraftEndPoints::EndPoint& point) {
+    auto it = end_points_.insert({point, 0});
+    if (end_points_.size() == 1) {
+        return;
+    }
     if (end_points_.size() == 2) {
         auto first_element = end_points_.begin();
         auto second_element = ++end_points_.begin();
         if (first_element->first.stage == second_element->first.stage) return;
 
         if (first_element->first.stage == FlightStage::kArrival) {
-            first_element->second.fine = 1;
+            first_element->second = 1;
         } else {
-            second_element->second.fine = 1;
+            second_element->second = 1;
         }
         mismatches_number_ += 1;
+
+        if (HasStay(first_element, second_element)) {
+            stay_cost_ += GetStayTime(first_element, second_element) * (*airports_)[first_element->first.airport].stay_cost;
+        } else if (HasStay(second_element, first_element)) {
+            stay_cost_ += GetStayTime(second_element, first_element) * (*airports_)[second_element->first.airport].stay_cost;
+        }
     }
 
     auto prev = GetPrev(it);
     auto next = GetNext(it);
 
     if (prev->first.stage == FlightStage::kArrival && next->first.stage == FlightStage::kDeparture) {
-        mismatches_number_ -= prev->second.fine;  // remove conflict if was
-        prev->second.fine = 0;
+        mismatches_number_ -= prev->second;  // remove conflict if was
+        prev->second = 0;
+    }
+    if (HasStay(prev, next)) {
+        stay_cost_ -= GetStayTime(prev, next) * (*airports_)[prev->first.airport].stay_cost;
     }
 
     // check new conflicts
     if (HasConflict(prev, it)) {
-        prev->second.fine = 1;
+        prev->second = 1;
         mismatches_number_ += 1;
     } else if (HasConflict(it, next)) {
-        it->second.fine = 1;
+        it->second = 1;
         mismatches_number_ += 1;
+    }
+
+    if (HasStay(prev, it)) {
+        stay_cost_ += GetStayTime(prev, it) * (*airports_)[prev->first.airport].stay_cost;
+    }
+    if (HasStay(it, next)) {
+        stay_cost_ += GetStayTime(it, next) * (*airports_)[it->first.airport].stay_cost;
     }
 }
 
 void HeuristicModel::AircraftEndPoints::RemoveTimePoint(
-        std::multimap<HeuristicModel::AircraftEndPoints::EndPoint,
-                      HeuristicModel::AircraftEndPoints::AirportAndFine>::iterator point) {
+        std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator point) {
     if (end_points_.size() == 1) {
         end_points_.erase(point);
+        stay_cost_ = 0;
         return;
     }
 
@@ -162,15 +200,55 @@ void HeuristicModel::AircraftEndPoints::RemoveTimePoint(
     auto next = GetNext(point);
     // remove conflict if was
     if (point->first.stage == FlightStage::kArrival) {
-        mismatches_number_ -= point->second.fine;
+        mismatches_number_ -= point->second;
+        if (HasStay(point, next)) {
+            stay_cost_ -= GetStayTime(point, next) * (*airports_)[point->first.airport].stay_cost;
+        }
     } else {
-        mismatches_number_ -= prev->second.fine;
-        prev->second.fine = 0;
+        mismatches_number_ -= prev->second;
+        prev->second = 0;
+        if (HasStay(prev, point)) {
+            stay_cost_ -= GetStayTime(prev, point) * (*airports_)[prev->first.airport].stay_cost;
+        }
     }
 
     end_points_.erase(point);
     if (HasConflict(prev, next)) {
-        prev->second.fine = 1;
+        prev->second = 1;
         mismatches_number_ += 1;
     }
+    if (HasStay(prev, next)) {
+        stay_cost_ += GetStayTime(prev, next) * (*airports_)[prev->first.airport].stay_cost;
+    }
+}
+
+int HeuristicModel::AircraftEndPoints::GetStayCost() const {
+    return stay_cost_;
+}
+
+int HeuristicModel::AircraftEndPoints::GetStayTime(
+    std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator left,
+    std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator right) {
+    int stay_time = right->first.time_point - left->first.time_point;
+    if (stay_time < 0) {
+        stay_time += hours_in_cycle_;
+    }
+    return stay_time + 2;
+}
+
+HeuristicModel::FlightsCost::FlightsCost(const std::shared_ptr<std::vector<Aircraft>>& aircrafts)
+    : aircrafts_(aircrafts) {}
+
+void HeuristicModel::FlightsCost::SetAircraftToFlight(int aircraft, const Flight& flight) {
+    int diff = (*aircrafts_)[aircraft].flight_cost * flight.distance;
+    fine_ += diff;
+}
+
+void HeuristicModel::FlightsCost::RemoveAircraftFromFlight(int aircraft, const Flight& flight) {
+    int diff = (*aircrafts_)[aircraft].flight_cost * flight.distance;
+    fine_ -= diff;
+}
+
+int HeuristicModel::FlightsCost::GetTotalFine() const {
+    return fine_;
 }
