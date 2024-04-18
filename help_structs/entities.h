@@ -1,6 +1,8 @@
 #pragma once
 
+#include <memory>
 #include <string>
+#include <vector>
 
 struct Flight {
     int id;
@@ -36,4 +38,11 @@ struct Airport {
     int stay_cost;
 
     [[nodiscard]] std::string ToJsonString() const;
+};
+
+struct InputData {
+    std::shared_ptr<std::vector<Flight>> flights;
+    std::shared_ptr<std::vector<Aircraft>> aircrafts;
+    std::shared_ptr<std::vector<Airport>> airports;
+    int hours_in_cycle;
 };

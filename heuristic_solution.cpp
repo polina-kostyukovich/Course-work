@@ -11,17 +11,11 @@
 using namespace Poco::JSON;
 
 #include "help_structs/entities.h"
+#include "heuristic_model/heuristic_model.h"
 
 struct BaseInputData {
     int flights_number;
     int aircrafts_number;
-};
-
-struct InputData {
-    std::vector<Flight> flights;
-    std::shared_ptr<std::vector<Aircraft>> aircrafts;
-    std::vector<Airport> airports;
-    int hours_in_cycle;
 };
 
 
@@ -62,10 +56,11 @@ std::unique_ptr<InputData> ReadData() {
     auto data = std::make_unique<InputData>();
     pObject = parser.parse(data_json_string).extract<Object::Ptr>();
     Array::Ptr flights_json = pObject->get("flights").extract<Array::Ptr>();
-    data->flights.reserve(flights_number);
+    data->flights = std::make_shared<std::vector<Flight>>();
+    data->flights->reserve(flights_number);
     for (int i = 0; i < flights_number; ++i) {
         auto flight = flights_json->getObject(i);
-        data->flights.emplace_back(flight->getValue<int>("id"),
+        data->flights->emplace_back(flight->getValue<int>("id"),
                                    flight->getValue<int>("departure airport"),
                                    flight->getValue<int>("arrival airport"),
                                    flight->getValue<int>("departure time"),
@@ -85,10 +80,11 @@ std::unique_ptr<InputData> ReadData() {
     }
 
     Array::Ptr airports_json = pObject->get("airports").extract<Array::Ptr>();
-    data->airports.reserve(airports_number);
+    data->airports = std::make_shared<std::vector<Airport>>();
+    data->airports->reserve(airports_number);
     for (int i = 0; i < airports_number; ++i) {
         auto airport = airports_json->getObject(i);
-        data->airports.emplace_back(airport->getValue<int>("id"),
+        data->airports->emplace_back(airport->getValue<int>("id"),
                                     airport->getValue<int>("stay cost"));
     }
 

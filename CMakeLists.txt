@@ -16,7 +16,8 @@ add_executable(graph_generation data_generation/graph_generation.cpp)
 add_executable(data_generation data_generation/data_generation.cpp help_structs/entities.cpp)
 add_executable(solution solution.cpp help_structs/row_wise_matrix.cpp
         help_structs/entities.cpp help_structs/indices_converter.cpp)
-add_executable(heuristic_solution heuristic_solution.cpp heuristic_model/heuristic_model.cpp)
+add_executable(heuristic_solution heuristic_solution.cpp heuristic_model/heuristic_model.cpp
+        heuristic_model/local_search_solver.cpp heuristic_model/simulated_annealing_solver.cpp)
 add_executable(testing testing.cpp)
 
 target_link_libraries(
