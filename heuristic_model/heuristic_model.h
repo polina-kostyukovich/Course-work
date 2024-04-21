@@ -8,6 +8,12 @@
 
 class HeuristicModel {
 public:
+    struct ModelState {
+        double fine;
+        SolutionCorrectnessInfo correctness_info;
+    };
+
+public:
     HeuristicModel(const std::shared_ptr<std::vector<Aircraft>>& aircrafts,
                    const std::shared_ptr<std::vector<Airport>>& airports,
                    int hours_in_cycle);
@@ -15,12 +21,12 @@ public:
     void SetAircraftToFlight(int aircraft, const Flight& flight);
     void RemoveAircraftFromFlight(int aircraft, const Flight& flight);
 
-    double GetTotalFine() const;
+    ModelState GetTotalFine() const;
 
 private:
     class FlightsAtTimes {
     public:
-        FlightsAtTimes() = default;
+        FlightsAtTimes(int flights_number, int aircrafts_number);
 
         void SetAircraftToFlight(int aircraft, const Flight& flight);
         void RemoveAircraftFromFlight(int aircraft, const Flight& flight);
@@ -95,13 +101,6 @@ private:
         int fine_{0};
         std::shared_ptr<std::vector<Aircraft>> aircrafts_;
     };
-
-private:
-    static double AIRPORTS_MISMATCH_FINE;
-    static double FLIGHTS_INTERSECTION_FINE;
-    static double SEATS_FINE;
-    static double FLIGHTS_COST;
-    static double STAY_COST;
 
 private:
     std::shared_ptr<std::vector<Aircraft>> aircrafts_;

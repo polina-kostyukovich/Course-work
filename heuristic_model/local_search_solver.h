@@ -16,8 +16,7 @@ public:
 
     std::vector<int> Solve();
 
-private:
-    static double NO_AIRCRAFT_FINE;
+    SolutionCorrectnessInfo GetCorrectnessInfo() const;
 
 private:
     std::mt19937 generator_;
@@ -27,4 +26,5 @@ private:
     bool allow_no_aircraft_;
     int aircrafts_number_;
     int iterations_number_;
+    SolutionCorrectnessInfo correctness_info_;
 };

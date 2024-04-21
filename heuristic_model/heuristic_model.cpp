@@ -2,11 +2,7 @@
 
 #include <numeric>
 
-double HeuristicModel::AIRPORTS_MISMATCH_FINE = 1e9;
-double HeuristicModel::FLIGHTS_INTERSECTION_FINE = 1e6;
-double HeuristicModel::SEATS_FINE = 1e3;
-double HeuristicModel::FLIGHTS_COST = 1e-4;
-double HeuristicModel::STAY_COST = 1e-2;
+#include "../constants/heuristic_constants.h"
 
 HeuristicModel::HeuristicModel(const std::shared_ptr<std::vector<Aircraft>>& aircrafts,
                                const std::shared_ptr<std::vector<Airport>>& airports,
@@ -17,7 +13,6 @@ HeuristicModel::HeuristicModel(const std::shared_ptr<std::vector<Aircraft>>& air
 
 void HeuristicModel::SetAircraftToFlight(int aircraft, const Flight& flight) {
     seats_fine_ += std::max(0, flight.min_passengers - (*aircrafts_)[aircraft].seats);
-
     flights_at_times_.SetAircraftToFlight(aircraft, flight);
     end_points_[aircraft].SetFlight(flight);
     flights_cost_.SetAircraftToFlight(aircraft, flight);
@@ -25,17 +20,16 @@ void HeuristicModel::SetAircraftToFlight(int aircraft, const Flight& flight) {
 
 void HeuristicModel::RemoveAircraftFromFlight(int aircraft, const Flight& flight) {
     seats_fine_ -= std::max(0, flight.min_passengers - (*aircrafts_)[aircraft].seats);
-
     flights_at_times_.RemoveAircraftFromFlight(aircraft, flight);
     end_points_[aircraft].RemoveFlight(flight);
     flights_cost_.RemoveAircraftFromFlight(aircraft, flight);
 }
 
-double HeuristicModel::GetTotalFine() const {
-    int64_t airport_mismatch = std::accumulate(end_points_.begin(),
-                                               end_points_.end(),
-                                               0,
-                                               [](int64_t acc, const AircraftEndPoints& value){
+HeuristicModel::ModelState HeuristicModel::GetTotalFine() const {
+    int64_t airport_mismatch_fine = std::accumulate(end_points_.begin(),
+                                                    end_points_.end(),
+                                                    0,
+                                                    [](int64_t acc, const AircraftEndPoints& value){
       return acc + value.GetTotalFine();
     });
     int64_t total_stay_cost = std::accumulate(end_points_.begin(),
@@ -44,12 +38,22 @@ double HeuristicModel::GetTotalFine() const {
                                               [](int64_t acc, const AircraftEndPoints& value){
         return acc + value.GetStayCost();
     });
-    return airport_mismatch * AIRPORTS_MISMATCH_FINE
-            + flights_at_times_.GetTotalFine() * FLIGHTS_INTERSECTION_FINE
-            + seats_fine_ * SEATS_FINE
-            + flights_cost_.GetTotalFine() * FLIGHTS_COST
-            + total_stay_cost * STAY_COST;
+
+    SolutionCorrectnessInfo correctness_info;
+    correctness_info.flights_intersect = flights_at_times_.GetTotalFine() == 0;
+    correctness_info.airports_mismatch = airport_mismatch_fine == 0;
+    correctness_info.seats_lack = seats_fine_ == 0;
+    auto total_fine = flights_at_times_.GetTotalFine() * constants::FLIGHTS_INTERSECTION_FINE
+            + airport_mismatch_fine * constants::AIRPORTS_MISMATCH_FINE
+            + seats_fine_ * constants::SEATS_FINE
+            + flights_cost_.GetTotalFine() * constants::FLIGHTS_COST
+            + total_stay_cost * constants::STAY_COST;
+    return {total_fine, correctness_info};
 }
+
+HeuristicModel::FlightsAtTimes::FlightsAtTimes(int flights_number, int aircrafts_number)
+    : flights_number_(std::vector<std::vector<int>>(
+        aircrafts_number,std::vector<int>(flights_number))) {}
 
 void HeuristicModel::FlightsAtTimes::SetAircraftToFlight(int aircraft, const Flight& flight) {
     for (int time_point = flight.departure_time; time_point <= flight.arrival_time; ++time_point) {
@@ -72,7 +76,6 @@ void HeuristicModel::FlightsAtTimes::RemoveAircraftFromFlight(int aircraft, cons
 int HeuristicModel::FlightsAtTimes::GetTotalFine() const {
     return fine_;
 }
-
 
 bool HeuristicModel::AircraftEndPoints::EndPoint::operator<(
     const HeuristicModel::AircraftEndPoints::EndPoint& other) const {

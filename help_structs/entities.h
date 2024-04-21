@@ -46,3 +46,13 @@ struct InputData {
     std::shared_ptr<std::vector<Airport>> airports;
     int hours_in_cycle;
 };
+
+struct SolutionCorrectnessInfo {
+    bool flights_intersect;
+    bool airports_mismatch;
+    bool seats_lack;
+
+    bool IsCorrect() const {
+        return !flights_intersect && !airports_mismatch && !seats_lack;
+    }
+};

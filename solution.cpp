@@ -20,13 +20,6 @@ struct BaseInputData {
     int aircrafts_number;
 };
 
-struct InputData {
-    std::vector<Flight> flights;
-    std::vector<Aircraft> aircrafts;
-    std::vector<Airport> airports;
-    int hours_in_cycle;
-};
-
 struct ProcessedData {
     std::vector<int> time_points;
     std::vector<size_t> departure_times_indices;
@@ -95,9 +88,9 @@ void MergeIntoArray(const std::vector<int>& array1, const std::vector<int>& arra
 std::vector<int> GetTimePointsArray(const std::unique_ptr<InputData>& input_data) {
     std::vector<int> departure_times;
     std::vector<int> arrival_times;
-    departure_times.reserve(input_data->flights.size());
-    arrival_times.reserve(input_data->flights.size());
-    for (auto& flight : input_data->flights) {
+    departure_times.reserve(input_data->flights->size());
+    arrival_times.reserve(input_data->flights->size());
+    for (auto& flight : (*input_data->flights)) {
         departure_times.push_back(flight.departure_time - 1);
         arrival_times.push_back(flight.arrival_time + 1);
     }
@@ -110,7 +103,7 @@ std::vector<int> GetTimePointsArray(const std::unique_ptr<InputData>& input_data
     departure_times.resize(arrival_end - arrival_times.begin());
 
     std::vector<int> times = {0};
-    times.reserve(input_data->flights.size() + 2);
+    times.reserve(input_data->flights->size() + 2);
     MergeIntoArray(departure_times, arrival_times, times);
     times.push_back(input_data->hours_in_cycle);
     return times;
@@ -151,12 +144,16 @@ std::unique_ptr<InputData> ReadData() {
     }
 
     auto data = std::make_unique<InputData>();
+    data->flights = std::make_shared<std::vector<Flight>>();
+    data->aircrafts = std::make_shared<std::vector<Aircraft>>();
+    data->airports = std::make_shared<std::vector<Airport>>();
+
     pObject = parser.parse(data_json_string).extract<Object::Ptr>();
     Array::Ptr flights_json = pObject->get("flights").extract<Array::Ptr>();
-    data->flights.reserve(flights_number);
+    data->flights->reserve(flights_number);
     for (int i = 0; i < flights_number; ++i) {
         auto flight = flights_json->getObject(i);
-        data->flights.emplace_back(flight->getValue<int>("id"),
+        data->flights->emplace_back(flight->getValue<int>("id"),
                                    flight->getValue<int>("departure airport"),
                                    flight->getValue<int>("arrival airport"),
                                    flight->getValue<int>("departure time"),
@@ -166,19 +163,19 @@ std::unique_ptr<InputData> ReadData() {
     }
 
     Array::Ptr aircrafts_json = pObject->get("aircrafts").extract<Array::Ptr>();
-    data->aircrafts.reserve(aircrafts_number);
+    data->aircrafts->reserve(aircrafts_number);
     for (int i = 0; i < aircrafts_number; ++i) {
         auto aircraft = aircrafts_json->getObject(i);
-        data->aircrafts.emplace_back(aircraft->getValue<int>("id"),
+        data->aircrafts->emplace_back(aircraft->getValue<int>("id"),
                                      aircraft->getValue<int>("seats"),
                                      aircraft->getValue<int>("flight cost"));
     }
 
     Array::Ptr airports_json = pObject->get("airports").extract<Array::Ptr>();
-    data->airports.reserve(airports_number);
+    data->airports->reserve(airports_number);
     for (int i = 0; i < airports_number; ++i) {
         auto airport = airports_json->getObject(i);
-        data->airports.emplace_back(airport->getValue<int>("id"),
+        data->airports->emplace_back(airport->getValue<int>("id"),
                                     airport->getValue<int>("stay cost"));
     }
 
@@ -190,14 +187,14 @@ std::unique_ptr<ProcessedData> GetProcessedData(const std::unique_ptr<InputData>
     auto processed_data = std::make_unique<ProcessedData>();
     processed_data->time_points = GetTimePointsArray(input_data);
     processed_data->is_flight_flying = std::vector<std::vector<int>>(
-        input_data->flights.size(),
+        input_data->flights->size(),
         std::vector<int>(processed_data->time_points.size() - 1, 0)
     );
-    processed_data->departure_times_indices.resize(input_data->flights.size());
-    processed_data->arrival_times_indices.resize(input_data->flights.size());
+    processed_data->departure_times_indices.resize(input_data->flights->size());
+    processed_data->arrival_times_indices.resize(input_data->flights->size());
 
-    for (size_t i = 0; i < input_data->flights.size(); ++i) {
-        auto flight = input_data->flights[i];
+    for (size_t i = 0; i < input_data->flights->size(); ++i) {
+        auto flight = (*input_data->flights)[i];
         auto departure_time_index = std::upper_bound(processed_data->time_points.begin(),
                                                      processed_data->time_points.end(),
                                                      flight.departure_time - 1)
@@ -217,16 +214,16 @@ std::unique_ptr<ProcessedData> GetProcessedData(const std::unique_ptr<InputData>
     }
 
     processed_data->departure_airports_indicator = std::vector<std::vector<int>>(
-        input_data->flights.size(),
-        std::vector<int>(input_data->airports.size(), 0)
+        input_data->flights->size(),
+        std::vector<int>(input_data->airports->size(), 0)
     );
     processed_data->arrival_airports_indicator = std::vector<std::vector<int>>(
-        input_data->flights.size(),
-        std::vector<int>(input_data->airports.size(), 0)
+        input_data->flights->size(),
+        std::vector<int>(input_data->airports->size(), 0)
     );
 
-    for (size_t i = 0; i < input_data->flights.size(); ++i) {
-        auto flight = input_data->flights[i];
+    for (size_t i = 0; i < input_data->flights->size(); ++i) {
+        auto flight = (*input_data->flights)[i];
         processed_data->departure_airports_indicator[i][flight.departure_airport] = 1;
         processed_data->arrival_airports_indicator[i][flight.arrival_airport] = 1;
     }
@@ -267,9 +264,9 @@ std::unique_ptr<Restrictions> GetModelRestrictions(
     const std::unique_ptr<InputData>& input_data,
     const std::unique_ptr<ProcessedData>& processed_data,
     const double M) {
-    size_t i_number = input_data->flights.size();
-    size_t j_number = input_data->aircrafts.size();
-    size_t l_number = input_data->airports.size();
+    size_t i_number = input_data->flights->size();
+    size_t j_number = input_data->aircrafts->size();
+    size_t l_number = input_data->airports->size();
     size_t k_number = processed_data->time_points.size() - 1;
     std::cout << "i: " << i_number << std::endl;
     std::cout << "j: " << j_number << std::endl;
@@ -298,13 +295,13 @@ std::unique_ptr<Restrictions> GetModelRestrictions(
     // 2 restriction
     for (size_t i = 0; i < i_number; ++i) {
         for (size_t j = 0; j < j_number; ++j) {
-            if (input_data->aircrafts[j].seats - input_data->flights[i].min_passengers == 0) {
+            if ((*input_data->aircrafts)[j].seats - (*input_data->flights)[i].min_passengers == 0) {
                 continue;
             }
 
             Row row;
-            row.non_zero_values = {static_cast<double>(input_data->aircrafts[j].seats
-                - input_data->flights[i].min_passengers)};
+            row.non_zero_values = {static_cast<double>((*input_data->aircrafts)[j].seats
+                - (*input_data->flights)[i].min_passengers)};
             row.columns_indices = {indices_converter.ConvertXIndex(i, j)};
             row.low_bound = 0;
             restrictions->AddRow(row);
@@ -448,9 +445,9 @@ std::unique_ptr<Restrictions> GetModelRestrictions(
 
 std::vector<double> GetTargetCoefficients(const std::unique_ptr<InputData>& input_data,
                                           const std::unique_ptr<ProcessedData>& processed_data) {
-    size_t i_number = input_data->flights.size();
-    size_t j_number = input_data->aircrafts.size();
-    size_t l_number = input_data->airports.size();
+    size_t i_number = input_data->flights->size();
+    size_t j_number = input_data->aircrafts->size();
+    size_t l_number = input_data->airports->size();
     size_t k_number = processed_data->time_points.size() - 1;
     IndicesConverter indices_converter{i_number, j_number, l_number, k_number};
     std::vector<double> target_coefficients(indices_converter.IndicesNumber(), 0);
@@ -459,8 +456,8 @@ std::vector<double> GetTargetCoefficients(const std::unique_ptr<InputData>& inpu
     for (size_t i = 0; i < i_number; ++i) {
         for (size_t j = 0; j < j_number; ++j) {
             auto index = indices_converter.ConvertXIndex(i, j);
-            target_coefficients[index] = static_cast<double>(input_data->aircrafts[j].flight_cost) *
-                                            input_data->flights[i].distance;
+            target_coefficients[index] = static_cast<double>((*input_data->aircrafts)[j].flight_cost) *
+                (*input_data->flights)[i].distance;
         }
     }
 
@@ -468,15 +465,15 @@ std::vector<double> GetTargetCoefficients(const std::unique_ptr<InputData>& inpu
     for (size_t j = 0; j < j_number; ++j) {
         for (size_t l = 0; l < l_number; ++l) {
             auto index = indices_converter.ConvertAIndex(l, j, 0);
-            target_coefficients[index] = input_data->airports[l].stay_cost
+            target_coefficients[index] = (*input_data->airports)[l].stay_cost
                 * (processed_data->time_points[1] - processed_data->time_points[0] + 1);
             for (size_t k = 1; k < k_number - 1; ++k) {
                 index = indices_converter.ConvertAIndex(l, j, k);
-                target_coefficients[index] = input_data->airports[l].stay_cost
+                target_coefficients[index] = (*input_data->airports)[l].stay_cost
                     * (processed_data->time_points[k + 1] - processed_data->time_points[k] + 2);
             }
             index = indices_converter.ConvertAIndex(l, j, k_number - 1);
-            target_coefficients[index] = input_data->airports[l].stay_cost
+            target_coefficients[index] = (*input_data->airports)[l].stay_cost
                 * (processed_data->time_points[k_number] - processed_data->time_points[k_number - 1] + 1);
         }
     }
