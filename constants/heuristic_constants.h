@@ -2,11 +2,13 @@
 
 namespace constants {
 
-extern double NO_AIRCRAFT_FINE;
-extern double FLIGHTS_INTERSECTION_FINE;
-extern double AIRPORTS_MISMATCH_FINE;
-extern double SEATS_FINE;
-extern double FLIGHTS_COST;
-extern double STAY_COST;
+extern const int ITERATIONS_NUMBER;
+
+extern const double NO_AIRCRAFT_FINE;
+extern const double FLIGHTS_INTERSECTION_FINE;
+extern const double AIRPORTS_MISMATCH_FINE;
+extern const double SEATS_FINE;
+extern const double FLIGHTS_COST;
+extern const double STAY_COST;
 
 }

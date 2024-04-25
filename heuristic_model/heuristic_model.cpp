@@ -6,8 +6,10 @@
 
 HeuristicModel::HeuristicModel(const std::shared_ptr<std::vector<Aircraft>>& aircrafts,
                                const std::shared_ptr<std::vector<Airport>>& airports,
-                               int hours_in_cycle)
+                               int hours_in_cycle,
+                               int time_points_number)
     : aircrafts_(aircrafts),
+      flights_at_times_(FlightsAtTimes(aircrafts->size(), time_points_number)),
       end_points_(std::vector<AircraftEndPoints>(aircrafts->size(), AircraftEndPoints{airports, hours_in_cycle})),
       flights_cost_(aircrafts) {}
 
@@ -51,9 +53,9 @@ HeuristicModel::ModelState HeuristicModel::GetTotalFine() const {
     return {total_fine, correctness_info};
 }
 
-HeuristicModel::FlightsAtTimes::FlightsAtTimes(int flights_number, int aircrafts_number)
+HeuristicModel::FlightsAtTimes::FlightsAtTimes(int aircrafts_number, int time_points_number)
     : flights_number_(std::vector<std::vector<int>>(
-        aircrafts_number,std::vector<int>(flights_number))) {}
+        aircrafts_number,std::vector<int>(time_points_number))) {}
 
 void HeuristicModel::FlightsAtTimes::SetAircraftToFlight(int aircraft, const Flight& flight) {
     for (int time_point = flight.departure_time; time_point <= flight.arrival_time; ++time_point) {
@@ -122,7 +124,8 @@ bool HeuristicModel::AircraftEndPoints::HasConflict(
 std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator HeuristicModel::AircraftEndPoints::GetPrev(
     std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator it) {
     if (it == end_points_.begin()) {
-        it = --end_points_.end();
+        it = end_points_.end();
+        --it;
     } else {
         --it;
     }
@@ -193,6 +196,7 @@ void HeuristicModel::AircraftEndPoints::InsertTimePoint(
 
 void HeuristicModel::AircraftEndPoints::RemoveTimePoint(
         std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator point) {
+    if (end_points_.empty()) throw;
     if (end_points_.size() == 1) {
         end_points_.erase(point);
         stay_cost_ = 0;

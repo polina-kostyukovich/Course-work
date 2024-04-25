@@ -40,6 +40,11 @@ struct Airport {
     [[nodiscard]] std::string ToJsonString() const;
 };
 
+struct BaseInputData {
+    int flights_number;
+    int aircrafts_number;
+};
+
 struct InputData {
     std::shared_ptr<std::vector<Flight>> flights;
     std::shared_ptr<std::vector<Aircraft>> aircrafts;

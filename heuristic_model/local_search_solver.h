@@ -14,7 +14,7 @@ public:
                                int seed,
                                bool allow_no_aircraft);
 
-    std::vector<int> Solve();
+    std::vector<int> Solve(const std::vector<int>& initial_solution = {});
 
     SolutionCorrectnessInfo GetCorrectnessInfo() const;
 

@@ -1,25 +1,35 @@
 #include "local_search_solver.h"
 
 #include "../constants/heuristic_constants.h"
+#include "../help_structs/data_processor.h"
 
 LocalSearchSolver::LocalSearchSolver(const std::unique_ptr<InputData>& input_data,
                                      int iterations_number,
                                      int seed,
                                      bool allow_no_aircraft)
-    : model_(input_data->aircrafts, input_data->airports, input_data->hours_in_cycle),
-      flights_(input_data->flights),
+    : flights_(input_data->flights),
       generator_(seed),
       allow_no_aircraft_(allow_no_aircraft),
       aircrafts_number_(input_data->aircrafts->size()),
-      iterations_number_(iterations_number) {}
+      iterations_number_(iterations_number) {
+    auto time_points = heuristic::GetTimePointsArrayForHeuristic(input_data->flights);
+    heuristic::ReplaceTimePointsWithIndices(input_data->flights, time_points);
+    model_ = HeuristicModel(input_data->aircrafts, input_data->airports, input_data->hours_in_cycle, time_points.size());
+}
 
-std::vector<int> LocalSearchSolver::Solve() {
+std::vector<int> LocalSearchSolver::Solve(const std::vector<int>& initial_solution) {
     solution_.resize(flights_->size());
     std::uniform_int_distribution<int> aircraft_dist(0, aircrafts_number_ - 1);
     std::uniform_int_distribution<int> index_dist(0, flights_->size() - 1);
 
+    if (!initial_solution.empty()) {
+        solution_ = initial_solution;
+    } else {
+        for (auto& item : solution_) {
+            item = aircraft_dist(generator_);
+        }
+    }
     for (int i = 0; i < solution_.size(); ++i) {
-        solution_[i] = aircraft_dist(generator_);
         model_.SetAircraftToFlight(solution_[i], (*flights_)[i]);
     }
 

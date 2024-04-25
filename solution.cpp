@@ -6,233 +6,15 @@
 #include <vector>
 
 #include <Highs.h>
-#include <Poco/JSON/JSON.h>
-#include <Poco/JSON/Parser.h>
 
-using namespace Poco::JSON;
-
+#include "help_structs/data_processor.h"
+#include "help_structs/data_reader.h"
 #include "help_structs/entities.h"
 #include "help_structs/indices_converter.h"
 #include "help_structs/row_wise_matrix.h"
 
-struct BaseInputData {
-    int flights_number;
-    int aircrafts_number;
-};
-
-struct ProcessedData {
-    std::vector<int> time_points;
-    std::vector<size_t> departure_times_indices;
-    std::vector<size_t> arrival_times_indices;
-    std::vector<std::vector<int>> is_flight_flying;
-    std::vector<std::vector<int>> departure_airports_indicator;
-    std::vector<std::vector<int>> arrival_airports_indicator;
-
-    void Print() const {
-        std::cout << "time_points:" << std::endl;
-        for (auto item : time_points) {
-            std::cout << item << ' ';
-        }
-        std::cout << "\ndeparture_times_indices\n";
-        for (auto item : departure_times_indices) {
-            std::cout << item << ' ';
-        }
-        std::cout << "\narrival_times_indices\n";
-        for (auto item : arrival_times_indices) {
-            std::cout << item << ' ';
-        }
-        std::cout << "\nis_flight_flying\n";
-        for (auto& array : is_flight_flying) {
-            for (auto item : array) {
-                std::cout << item << " ";
-            }
-            std::cout << '\n';
-        }
-        std::cout << "\ndeparture_airports_indicator\n";
-        for (auto& array : departure_airports_indicator) {
-            for (auto item : array) {
-                std::cout << item << " ";
-            }
-            std::cout << '\n';
-        }
-        std::cout << "\narrival_airports_indicator\n";
-        for (auto& array : arrival_airports_indicator) {
-            for (auto item : array) {
-                std::cout << item << " ";
-            }
-            std::cout << '\n';
-        }
-    }
-};
-
-void MergeIntoArray(const std::vector<int>& array1, const std::vector<int>& array2,
-                    std::vector<int>& array_to_fill) {
-    size_t index1 = 0;
-    size_t index2 = 0;
-    while (index1 < array1.size() && index2 < array2.size()) {
-        if (array1[index1] <= array2[index2]) {
-            array_to_fill.push_back(array1[index1++]);
-        } else {
-            array_to_fill.push_back(array2[index2++]);
-        }
-    }
-
-    while (index1 < array1.size()) {
-        array_to_fill.push_back(array1[index1++]);
-    }
-    while (index2 < array2.size()) {
-        array_to_fill.push_back(array2[index2++]);
-    }
-}
-
-std::vector<int> GetTimePointsArray(const std::unique_ptr<InputData>& input_data) {
-    std::vector<int> departure_times;
-    std::vector<int> arrival_times;
-    departure_times.reserve(input_data->flights->size());
-    arrival_times.reserve(input_data->flights->size());
-    for (auto& flight : (*input_data->flights)) {
-        departure_times.push_back(flight.departure_time - 1);
-        arrival_times.push_back(flight.arrival_time + 1);
-    }
-
-    std::sort(departure_times.begin(), departure_times.end());
-    std::sort(arrival_times.begin(), arrival_times.end());
-    auto departure_end = std::unique(departure_times.begin(), departure_times.end());
-    departure_times.resize(departure_end - departure_times.begin());
-    auto arrival_end = std::unique(arrival_times.begin(), arrival_times.end());
-    departure_times.resize(arrival_end - arrival_times.begin());
-
-    std::vector<int> times = {0};
-    times.reserve(input_data->flights->size() + 2);
-    MergeIntoArray(departure_times, arrival_times, times);
-    times.push_back(input_data->hours_in_cycle);
-    return times;
-}
-
-BaseInputData ReadBaseData() {
-    std::ifstream read_input_data("../input_data/input.json");
-    std::string input_json_string, string;
-    while (std::getline(read_input_data, string)) {
-        input_json_string += string + '\n';
-    }
-
-    Parser parser;
-    Object::Ptr pObject = parser.parse(input_json_string).extract<Object::Ptr>();
-    int flights_number = pObject->getValue<int>("flights number");
-    int aircrafts_number = pObject->getValue<int>("aircrafts number");
-    return {flights_number, aircrafts_number};
-}
-
-std::unique_ptr<InputData> ReadData() {
-    std::ifstream read_input_data("../input_data/input.json");
-    std::string input_json_string, string;
-    while (std::getline(read_input_data, string)) {
-        input_json_string += string + '\n';
-    }
-
-    Parser parser;
-    Object::Ptr pObject = parser.parse(input_json_string).extract<Object::Ptr>();
-    int airports_number = pObject->getValue<int>("airports number");
-    int flights_number = pObject->getValue<int>("flights number");
-    int aircrafts_number = pObject->getValue<int>("aircrafts number");
-    int hours_in_cycle = pObject->getValue<int>("hours in cycle");
-
-    std::ifstream read_data("../data/testing_data.json");
-    std::string data_json_string;
-    while (std::getline(read_data, string)) {
-        data_json_string += string + '\n';
-    }
-
-    auto data = std::make_unique<InputData>();
-    data->flights = std::make_shared<std::vector<Flight>>();
-    data->aircrafts = std::make_shared<std::vector<Aircraft>>();
-    data->airports = std::make_shared<std::vector<Airport>>();
-
-    pObject = parser.parse(data_json_string).extract<Object::Ptr>();
-    Array::Ptr flights_json = pObject->get("flights").extract<Array::Ptr>();
-    data->flights->reserve(flights_number);
-    for (int i = 0; i < flights_number; ++i) {
-        auto flight = flights_json->getObject(i);
-        data->flights->emplace_back(flight->getValue<int>("id"),
-                                   flight->getValue<int>("departure airport"),
-                                   flight->getValue<int>("arrival airport"),
-                                   flight->getValue<int>("departure time"),
-                                   flight->getValue<int>("arrival time"),
-                                   flight->getValue<int>("distance"),
-                                   flight->getValue<int>("min passengers"));
-    }
-
-    Array::Ptr aircrafts_json = pObject->get("aircrafts").extract<Array::Ptr>();
-    data->aircrafts->reserve(aircrafts_number);
-    for (int i = 0; i < aircrafts_number; ++i) {
-        auto aircraft = aircrafts_json->getObject(i);
-        data->aircrafts->emplace_back(aircraft->getValue<int>("id"),
-                                     aircraft->getValue<int>("seats"),
-                                     aircraft->getValue<int>("flight cost"));
-    }
-
-    Array::Ptr airports_json = pObject->get("airports").extract<Array::Ptr>();
-    data->airports->reserve(airports_number);
-    for (int i = 0; i < airports_number; ++i) {
-        auto airport = airports_json->getObject(i);
-        data->airports->emplace_back(airport->getValue<int>("id"),
-                                    airport->getValue<int>("stay cost"));
-    }
-
-    data->hours_in_cycle = hours_in_cycle;
-    return data;
-}
-
-std::unique_ptr<ProcessedData> GetProcessedData(const std::unique_ptr<InputData>& input_data) {
-    auto processed_data = std::make_unique<ProcessedData>();
-    processed_data->time_points = GetTimePointsArray(input_data);
-    processed_data->is_flight_flying = std::vector<std::vector<int>>(
-        input_data->flights->size(),
-        std::vector<int>(processed_data->time_points.size() - 1, 0)
-    );
-    processed_data->departure_times_indices.resize(input_data->flights->size());
-    processed_data->arrival_times_indices.resize(input_data->flights->size());
-
-    for (size_t i = 0; i < input_data->flights->size(); ++i) {
-        auto flight = (*input_data->flights)[i];
-        auto departure_time_index = std::upper_bound(processed_data->time_points.begin(),
-                                                     processed_data->time_points.end(),
-                                                     flight.departure_time - 1)
-            - processed_data->time_points.begin() - 1;
-
-        auto arrival_time_index = std::lower_bound(processed_data->time_points.begin(),
-                                                   processed_data->time_points.end(),
-                                                   flight.arrival_time + 1)
-            - processed_data->time_points.begin();
-
-        for (auto j = departure_time_index; j < arrival_time_index; ++j) {
-            processed_data->is_flight_flying[i][j] = 1;
-        }
-
-        processed_data->departure_times_indices[i] = departure_time_index;
-        processed_data->arrival_times_indices[i] = arrival_time_index;
-    }
-
-    processed_data->departure_airports_indicator = std::vector<std::vector<int>>(
-        input_data->flights->size(),
-        std::vector<int>(input_data->airports->size(), 0)
-    );
-    processed_data->arrival_airports_indicator = std::vector<std::vector<int>>(
-        input_data->flights->size(),
-        std::vector<int>(input_data->airports->size(), 0)
-    );
-
-    for (size_t i = 0; i < input_data->flights->size(); ++i) {
-        auto flight = (*input_data->flights)[i];
-        processed_data->departure_airports_indicator[i][flight.departure_airport] = 1;
-        processed_data->arrival_airports_indicator[i][flight.arrival_airport] = 1;
-    }
-
-    return processed_data;
-}
-
 size_t GetNeededCapacity(size_t i_number, size_t j_number, size_t l_number, size_t k_number,
-                         const std::unique_ptr<ProcessedData>& processed_data) {
+                         const std::unique_ptr<ILP::ProcessedData>& processed_data) {
     size_t capacity = 0;
     // 1 restriction
     capacity += i_number * j_number;
@@ -262,7 +44,7 @@ size_t GetNeededCapacity(size_t i_number, size_t j_number, size_t l_number, size
 
 std::unique_ptr<Restrictions> GetModelRestrictions(
     const std::unique_ptr<InputData>& input_data,
-    const std::unique_ptr<ProcessedData>& processed_data,
+    const std::unique_ptr<ILP::ProcessedData>& processed_data,
     const double M) {
     size_t i_number = input_data->flights->size();
     size_t j_number = input_data->aircrafts->size();
@@ -444,7 +226,7 @@ std::unique_ptr<Restrictions> GetModelRestrictions(
 }
 
 std::vector<double> GetTargetCoefficients(const std::unique_ptr<InputData>& input_data,
-                                          const std::unique_ptr<ProcessedData>& processed_data) {
+                                          const std::unique_ptr<ILP::ProcessedData>& processed_data) {
     size_t i_number = input_data->flights->size();
     size_t j_number = input_data->aircrafts->size();
     size_t l_number = input_data->airports->size();
@@ -509,10 +291,13 @@ std::unique_ptr<HighsModel> GetHighsModel(const std::unique_ptr<Restrictions>& r
 
 int main() {
     const double kM = 1e10;
-    auto base_input_data = ReadBaseData();
-    auto input_data = ReadData();
+    const std::string input_filename = "../input_data/input.json";
+    const std::string data_filename = "../data/testing_data.json";
+    auto reader = DataReader(input_filename, data_filename);
+    auto base_input_data = reader.ReadBaseData();
+    auto input_data = reader.ReadData();
     // std::cout << "Read data" << std::endl;
-    auto processed_data = GetProcessedData(input_data);
+    auto processed_data = ILP::GetProcessedData(input_data);
     // std::cout << "Processed data" << std::endl;
     // processed_data->Print();
     auto model_restrictions = GetModelRestrictions(input_data, processed_data, kM);

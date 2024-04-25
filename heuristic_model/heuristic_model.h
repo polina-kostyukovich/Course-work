@@ -14,9 +14,11 @@ public:
     };
 
 public:
+    HeuristicModel() = default;
     HeuristicModel(const std::shared_ptr<std::vector<Aircraft>>& aircrafts,
                    const std::shared_ptr<std::vector<Airport>>& airports,
-                   int hours_in_cycle);
+                   int hours_in_cycle,
+                   int time_points_number);
 
     void SetAircraftToFlight(int aircraft, const Flight& flight);
     void RemoveAircraftFromFlight(int aircraft, const Flight& flight);
@@ -26,7 +28,8 @@ public:
 private:
     class FlightsAtTimes {
     public:
-        FlightsAtTimes(int flights_number, int aircrafts_number);
+        FlightsAtTimes() = default;
+        FlightsAtTimes(int aircrafts_number, int time_points_number);
 
         void SetAircraftToFlight(int aircraft, const Flight& flight);
         void RemoveAircraftFromFlight(int aircraft, const Flight& flight);
@@ -90,6 +93,7 @@ private:
 
     class FlightsCost {
     public:
+        FlightsCost() = default;
         explicit FlightsCost(const std::shared_ptr<std::vector<Aircraft>>& aircrafts);
 
         void SetAircraftToFlight(int aircraft, const Flight& flight);
