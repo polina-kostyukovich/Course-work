@@ -1,8 +1,8 @@
 {
-    "aircrafts number": 4,
-    "airports number": 4,
+    "aircrafts number": 10,
+    "airports number": 9,
     "fleets number": 3,
-    "flights number": 8,
+    "flights number": 30,
     "aircraft speed": 300,
     "hours in cycle": 96,
     "max distance": 2000,

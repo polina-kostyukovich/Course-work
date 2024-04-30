@@ -1,5 +1,7 @@
 #include "data_processor.h"
 
+#include <algorithm>
+
 namespace ILP {
 
 void MergeIntoArray(const std::vector<int>& array1, const std::vector<int>& array2,
@@ -153,10 +155,10 @@ void ReplaceTimePointsWithIndices(std::shared_ptr<std::vector<Flight>>& flights,
     for (auto& flight : *flights) {
         auto departure_index = std::lower_bound(time_points.begin(),
                                                 time_points.end(),
-                                                flight.departure_time) - time_points.begin();
+                                                flight.departure_time - 1) - time_points.begin();
         auto arrival_index = std::lower_bound(time_points.begin(),
                                               time_points.end(),
-                                              flight.arrival_time) - time_points.begin();
+                                              flight.arrival_time + 1) - time_points.begin();
         flight.departure_time = departure_index;
         flight.arrival_time = arrival_index;
     }

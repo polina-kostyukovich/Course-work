@@ -14,7 +14,7 @@ public:
                                int seed,
                                bool allow_no_aircraft);
 
-    std::vector<int> Solve(const std::vector<int>& initial_solution = {});
+    std::pair<std::vector<int>, double> Solve(const std::vector<int>& initial_solution = {});
 
     SolutionCorrectnessInfo GetCorrectnessInfo() const;
 
@@ -26,5 +26,6 @@ private:
     bool allow_no_aircraft_;
     int aircrafts_number_;
     int iterations_number_;
+    double no_aircraft_fine_{0};
     SolutionCorrectnessInfo correctness_info_;
 };

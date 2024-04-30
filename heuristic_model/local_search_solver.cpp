@@ -14,10 +14,10 @@ LocalSearchSolver::LocalSearchSolver(const std::unique_ptr<InputData>& input_dat
       iterations_number_(iterations_number) {
     auto time_points = heuristic::GetTimePointsArrayForHeuristic(input_data->flights);
     heuristic::ReplaceTimePointsWithIndices(input_data->flights, time_points);
-    model_ = HeuristicModel(input_data->aircrafts, input_data->airports, input_data->hours_in_cycle, time_points.size());
+    model_ = HeuristicModel(input_data->aircrafts, input_data->airports, input_data->hours_in_cycle, time_points);
 }
 
-std::vector<int> LocalSearchSolver::Solve(const std::vector<int>& initial_solution) {
+std::pair<std::vector<int>, double> LocalSearchSolver::Solve(const std::vector<int>& initial_solution) {
     solution_.resize(flights_->size());
     std::uniform_int_distribution<int> aircraft_dist(0, aircrafts_number_ - 1);
     std::uniform_int_distribution<int> index_dist(0, flights_->size() - 1);
@@ -25,7 +25,7 @@ std::vector<int> LocalSearchSolver::Solve(const std::vector<int>& initial_soluti
     if (!initial_solution.empty()) {
         solution_ = initial_solution;
     } else {
-        for (auto& item : solution_) {
+        for (auto& item : solution_) {  // start only with real aircrafts
             item = aircraft_dist(generator_);
         }
     }
@@ -42,10 +42,15 @@ std::vector<int> LocalSearchSolver::Solve(const std::vector<int>& initial_soluti
         auto index = index_dist(generator_);
         auto prev_aircraft = solution_[index];
         auto new_aircraft = aircraft_dist(generator_);
+        if (new_aircraft == prev_aircraft) continue;
 
-        model_.RemoveAircraftFromFlight(prev_aircraft, (*flights_)[index]);
         double additional_fine = 0;
-        if (new_aircraft < flights_->size()) {  // real aircraft
+        if (prev_aircraft < aircrafts_number_) {
+            model_.RemoveAircraftFromFlight(prev_aircraft, (*flights_)[index]);
+        } else {
+            additional_fine -= constants::NO_AIRCRAFT_FINE;
+        }
+        if (new_aircraft < aircrafts_number_) {  // real aircraft
             model_.SetAircraftToFlight(new_aircraft, (*flights_)[index]);
         } else {  // no aircraft
             additional_fine += constants::NO_AIRCRAFT_FINE;
@@ -53,24 +58,26 @@ std::vector<int> LocalSearchSolver::Solve(const std::vector<int>& initial_soluti
         auto new_state = model_.GetTotalFine();
         new_state.fine += additional_fine;
 
-        if (new_state.fine > prev_state.fine) {
-            correctness_info_ = prev_state.correctness_info;
-            if (additional_fine == 0) {  // real aircraft
-                model_.RemoveAircraftFromFlight(new_aircraft, (*flights_)[index]);
-            } else {  // fake aircraft
-                correctness_info_ = {true, true, true};
-            }
-            model_.SetAircraftToFlight(prev_aircraft, (*flights_)[index]);
-        } else {  // change solution
+        if (new_state.fine < prev_state.fine + no_aircraft_fine_ + constants::EPSILON) {  // change solution to a better one
             solution_[index] = new_aircraft;
+            no_aircraft_fine_ += additional_fine;
             correctness_info_ = new_state.correctness_info;
+        } else {
+            correctness_info_ = prev_state.correctness_info;
+            if (new_aircraft < aircrafts_number_) {  // real new aircraft
+                model_.RemoveAircraftFromFlight(new_aircraft, (*flights_)[index]);
+            }
+            if (prev_aircraft < aircrafts_number_) {  // real previous aircraft
+                model_.SetAircraftToFlight(prev_aircraft, (*flights_)[index]);
+            }
         }
     }
-    return solution_;
+    if (no_aircraft_fine_ > constants::EPSILON) {
+        correctness_info_.has_no_aircraft = true;
+    }
+    return {solution_, model_.GetTotalFine().fine + no_aircraft_fine_};
 }
 
 SolutionCorrectnessInfo LocalSearchSolver::GetCorrectnessInfo() const {
     return correctness_info_;
 }
-
-

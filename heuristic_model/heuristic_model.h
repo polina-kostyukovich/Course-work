@@ -18,7 +18,7 @@ public:
     HeuristicModel(const std::shared_ptr<std::vector<Aircraft>>& aircrafts,
                    const std::shared_ptr<std::vector<Airport>>& airports,
                    int hours_in_cycle,
-                   int time_points_number);
+                   const std::vector<int>& time_points);
 
     void SetAircraftToFlight(int aircraft, const Flight& flight);
     void RemoveAircraftFromFlight(int aircraft, const Flight& flight);
@@ -34,6 +34,8 @@ private:
         void SetAircraftToFlight(int aircraft, const Flight& flight);
         void RemoveAircraftFromFlight(int aircraft, const Flight& flight);
 
+        void Print() const;
+
         int GetTotalFine() const;
 
     private:
@@ -43,11 +45,15 @@ private:
 
     class AircraftEndPoints {  // describes 1 aircraft
     public:
-         AircraftEndPoints(const std::shared_ptr<std::vector<Airport>>& airports, int hours_in_cycle)
-            : airports_(airports), hours_in_cycle_(hours_in_cycle) {}
+         AircraftEndPoints(const std::shared_ptr<std::vector<Airport>>& airports,
+                           int hours_in_cycle,
+                           const std::vector<int>& time_points)
+            : airports_(airports), hours_in_cycle_(hours_in_cycle), time_points_(time_points) {}
 
         void SetFlight(const Flight& flight);
         void RemoveFlight(const Flight& flight);
+
+        void Print() const;
 
         int GetTotalFine() const;
         int GetStayCost() const;
@@ -64,6 +70,8 @@ private:
             FlightStage stage;
 
             bool operator<(const EndPoint& other) const;
+
+            std::string ToStr() const;
         };
 
     private:
@@ -86,6 +94,7 @@ private:
     private:
         std::multimap<EndPoint, int> end_points_;
         std::shared_ptr<std::vector<Airport>> airports_;
+        std::vector<int> time_points_;
         int mismatches_number_{0};
         int stay_cost_{0};
         int hours_in_cycle_;

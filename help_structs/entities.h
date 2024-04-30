@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -56,8 +57,9 @@ struct SolutionCorrectnessInfo {
     bool flights_intersect;
     bool airports_mismatch;
     bool seats_lack;
+    bool has_no_aircraft{false};
 
     bool IsCorrect() const {
-        return !flights_intersect && !airports_mismatch && !seats_lack;
+        return !flights_intersect && !airports_mismatch && !seats_lack && !has_no_aircraft;
     }
 };
