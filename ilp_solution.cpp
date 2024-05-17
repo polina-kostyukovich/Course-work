@@ -289,10 +289,18 @@ std::unique_ptr<HighsModel> GetHighsModel(const std::unique_ptr<Restrictions>& r
     return model;
 }
 
-int main() {
+int main(int argc, char** argv) {
     const double kM = 1e10;
-    const std::string input_filename = "../input_data/input.json";
-    const std::string data_filename = "../data/testing_data.json";
+    std::string input_filename = "../input_data/input.json";
+    std::string data_filename = "../data/testing_data.json";
+    if (argc == 2) {
+        auto args = GetArgs(argv[1]);
+        input_filename = args[0];
+        data_filename = args[1];
+    } else {
+        throw;
+    }
+
     auto reader = DataReader(input_filename, data_filename);
     auto base_input_data = reader.ReadBaseData();
     auto input_data = reader.ReadData();
@@ -337,6 +345,7 @@ int main() {
         std::cout << "INFEASIBLE\n";
         auto finish = std::chrono::high_resolution_clock::now();
         std::cout << "time = " << std::chrono::duration<double>(finish - start).count() << '\n' << std::endl;
+        std::cerr << 1e20;
         return 0;
     }
 
@@ -358,5 +367,6 @@ int main() {
     }
     auto finish = std::chrono::high_resolution_clock::now();
     std::cout << "time = " << std::chrono::duration<double>(finish - start).count() << std::endl;
+    std::cerr << info.objective_function_value;
     return 0;
 }

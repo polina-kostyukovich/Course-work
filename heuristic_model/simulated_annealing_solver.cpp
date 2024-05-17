@@ -6,10 +6,10 @@
 #include <cmath>
 
 SimulatedAnnealingSolver::SimulatedAnnealingSolver(const std::unique_ptr<InputData>& input_data,
-                                     int iterations_number,
-                                     int seed,
-                                     bool allow_no_aircraft,
-                                     const std::shared_ptr<TemperatureFunction>& temperature_function)
+                                                   int iterations_number,
+                                                   int seed,
+                                                   bool allow_no_aircraft,
+                                                   const std::shared_ptr<TemperatureFunction>& temperature_function)
     : flights_(input_data->flights),
       generator_(seed),
       allow_no_aircraft_(allow_no_aircraft),
@@ -18,7 +18,10 @@ SimulatedAnnealingSolver::SimulatedAnnealingSolver(const std::unique_ptr<InputDa
       temperature_function_(temperature_function) {
     auto time_points = heuristic::GetTimePointsArrayForHeuristic(input_data->flights);
     heuristic::ReplaceTimePointsWithIndices(input_data->flights, time_points);
-    model_ = HeuristicModel(input_data->aircrafts, input_data->airports, input_data->hours_in_cycle, time_points);
+    model_ = HeuristicModel(input_data->aircrafts,
+                            input_data->airports,
+                            input_data->hours_in_cycle,
+                            time_points);
 }
 
 std::pair<std::vector<int>, double> SimulatedAnnealingSolver::Solve(const std::vector<int>& initial_solution) {

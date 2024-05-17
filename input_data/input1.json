@@ -1,0 +1,16 @@
+{
+    "aircraft speed": 300,
+    "aircrafts number": 14,
+    "airports number": 10,
+    "fleets number": 2,
+    "flights number": 40,
+    "hours in cycle": 96,
+    "max distance": 2000,
+    "max flight cost": 5,
+    "max passengers number": 1000,
+    "max stay cost": 100,
+    "min distance": 200,
+    "min flight cost": 1,
+    "min passengers number": 100,
+    "min stay cost": 10
+}

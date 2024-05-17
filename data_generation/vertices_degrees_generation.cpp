@@ -6,6 +6,8 @@
 #include <Poco/JSON/JSON.h>
 #include <Poco/JSON/Parser.h>
 
+#include "../help_structs/entities.h"
+
 using namespace Poco::JSON;
 
 std::vector<int> GetRandomVerticesDegrees(int vertices_number, int degrees_sum, int seed) {
@@ -34,12 +36,15 @@ std::vector<int> GetRandomVerticesDegrees(int vertices_number, int degrees_sum, 
 }
 
 int main(int argc, char** argv) {
-    int seed = 123;
+    int seed = 139;
+    std::string input_filename = "../input_data/input.json";
     if (argc == 2) {
-        seed = std::stoi(argv[1]);
+        auto args = GetArgs(argv[1]);
+        seed = std::stoi(args[0]);
+        input_filename = args[1];
     }
 
-    std::ifstream read("../input_data/input.json");
+    std::ifstream read(input_filename);
     std::string json_string, string;
     while (std::getline(read, string)) {
         json_string += string + '\n';

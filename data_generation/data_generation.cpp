@@ -146,13 +146,18 @@ std::vector<Airport> GenerateAirports(int airports_number, int min_stay_cost, in
 }
 
 int main(int argc, char** argv) {
-    int seed = 123;
+    int seed = 159807767;
+    std::string input_filename = "../input_data/input.json";
+    std::string output_filename = "../data/test4_14.json";
     if (argc == 2) {
-        seed = std::stoi(argv[1]);
+        auto args = GetArgs(argv[1]);
+        seed = std::stoi(args[0]);
+        input_filename = args[1];
+        output_filename = args[2];
     }
     generator.seed(seed);
 
-    std::ifstream read_input_data("../input_data/input.json");
+    std::ifstream read_input_data(input_filename);
     std::string json_string, string;
     while (std::getline(read_input_data, string)) {
         json_string += string + '\n';
@@ -198,7 +203,7 @@ int main(int argc, char** argv) {
     output_json += "  \"aircrafts\": " + aircrafts_json + ",\n";
     output_json += "  \"airports\": " + airports_json + "\n";
     output_json += "}";
-    std::ofstream write("../data/testing_data.json");
+    std::ofstream write(output_filename);
     write << output_json << '\n';
     write.flush();
     return 0;

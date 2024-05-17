@@ -2,6 +2,8 @@
 
 namespace constants {
 
+extern const int LAUNCHES_NUMBER;
+
 extern const int ITERATIONS_NUMBER;
 
 extern const double EPSILON;

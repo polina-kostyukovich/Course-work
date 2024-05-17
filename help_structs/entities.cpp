@@ -1,3 +1,4 @@
+#include <sstream>
 #include "entities.h"
 
 std::string Flight::ToJsonString() const {
@@ -38,4 +39,15 @@ std::string Airport::ToJsonString() const {
         + "      \"stay cost\": " + std::to_string(stay_cost) + "\n"
         + "    }";
     return json;
+}
+
+std::vector<std::string> GetArgs(const std::string& string) {
+    std::vector<std::string> result;
+    std::stringstream stream;
+    stream << string;
+    std::string arg;
+    while (stream >> arg) {
+        result.push_back(arg);
+    }
+    return result;
 }

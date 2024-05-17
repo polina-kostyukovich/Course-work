@@ -63,3 +63,5 @@ struct SolutionCorrectnessInfo {
         return !flights_intersect && !airports_mismatch && !seats_lack && !has_no_aircraft;
     }
 };
+
+std::vector<std::string> GetArgs(const std::string& string);

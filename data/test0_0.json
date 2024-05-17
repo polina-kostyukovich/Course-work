@@ -1,0 +1,138 @@
+{
+  "flights": [
+    {
+      "id": 0,
+      "departure airport": 0,
+      "arrival airport": 3,
+      "departure time": 27,
+      "arrival time": 28,
+      "distance": 217,
+      "min passengers": 491
+    },
+    {
+      "id": 1,
+      "departure airport": 3,
+      "arrival airport": 0,
+      "departure time": 15,
+      "arrival time": 16,
+      "distance": 217,
+      "min passengers": 491
+    },
+    {
+      "id": 2,
+      "departure airport": 1,
+      "arrival airport": 4,
+      "departure time": 17,
+      "arrival time": 23,
+      "distance": 1694,
+      "min passengers": 539
+    },
+    {
+      "id": 3,
+      "departure airport": 4,
+      "arrival airport": 1,
+      "departure time": 31,
+      "arrival time": 37,
+      "distance": 1694,
+      "min passengers": 539
+    },
+    {
+      "id": 4,
+      "departure airport": 2,
+      "arrival airport": 4,
+      "departure time": 16,
+      "arrival time": 19,
+      "distance": 858,
+      "min passengers": 588
+    },
+    {
+      "id": 5,
+      "departure airport": 4,
+      "arrival airport": 2,
+      "departure time": 77,
+      "arrival time": 80,
+      "distance": 858,
+      "min passengers": 588
+    },
+    {
+      "id": 6,
+      "departure airport": 3,
+      "arrival airport": 4,
+      "departure time": 69,
+      "arrival time": 71,
+      "distance": 590,
+      "min passengers": 269
+    },
+    {
+      "id": 7,
+      "departure airport": 4,
+      "arrival airport": 3,
+      "departure time": 7,
+      "arrival time": 9,
+      "distance": 590,
+      "min passengers": 269
+    },
+    {
+      "id": 8,
+      "departure airport": 3,
+      "arrival airport": 4,
+      "departure time": 79,
+      "arrival time": 81,
+      "distance": 590,
+      "min passengers": 158
+    },
+    {
+      "id": 9,
+      "departure airport": 4,
+      "arrival airport": 3,
+      "departure time": 87,
+      "arrival time": 89,
+      "distance": 590,
+      "min passengers": 158
+    }
+  ],
+  "aircrafts": [
+    {
+      "id": 0,
+      "seats": 839,
+      "flight cost": 2
+    },
+    {
+      "id": 1,
+      "seats": 822,
+      "flight cost": 3
+    },
+    {
+      "id": 2,
+      "seats": 822,
+      "flight cost": 3
+    },
+    {
+      "id": 3,
+      "seats": 822,
+      "flight cost": 3
+    }
+  ],
+  "airports": [
+    {
+      "id": 0,
+      "stay cost": 71
+    },
+    {
+      "id": 1,
+      "stay cost": 64
+    },
+    {
+      "id": 2,
+      "stay cost": 16
+    },
+    {
+      "id": 3,
+      "stay cost": 53
+    },
+    {
+      "id": 4,
+      "stay cost": 15
+    }
+  ]
+}
