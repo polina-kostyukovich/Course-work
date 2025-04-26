@@ -8,10 +8,11 @@
 HeuristicModel::HeuristicModel(const std::shared_ptr<std::vector<Aircraft>>& aircrafts,
                                const std::shared_ptr<std::vector<Airport>>& airports,
                                int hours_in_cycle,
+                               int hour_size,
                                const std::vector<int>& time_points)
     : aircrafts_(aircrafts),
       flights_at_times_(FlightsAtTimes(aircrafts->size(), time_points.size())),
-      end_points_(std::vector<AircraftEndPoints>(aircrafts->size(), AircraftEndPoints{airports, hours_in_cycle, time_points})),
+      end_points_(std::vector<AircraftEndPoints>(aircrafts->size(), AircraftEndPoints{airports, hours_in_cycle, hour_size, time_points})),
       flights_cost_(aircrafts) {}
 
 void HeuristicModel::SetAircraftToFlight(int aircraft, const Flight& flight) {
@@ -232,13 +233,13 @@ int HeuristicModel::AircraftEndPoints::GetStayCost() const {
 }
 
 int HeuristicModel::AircraftEndPoints::GetStayTime(
-    std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator left,
-    std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator right) {
+        std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator left,
+        std::multimap<HeuristicModel::AircraftEndPoints::EndPoint, int>::iterator right) {
     int stay_time = time_points_[right->first.time_point] - time_points_[left->first.time_point];
     if (stay_time < 0) {
         stay_time += hours_in_cycle_;
     }
-    return stay_time + 2;
+    return stay_time + 2 * hour_size_;
 }
 
 HeuristicModel::FlightsCost::FlightsCost(const std::shared_ptr<std::vector<Aircraft>>& aircrafts)

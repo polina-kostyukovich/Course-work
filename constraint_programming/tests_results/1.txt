@@ -1,0 +1,132 @@
+TEST 10
+% Generated FlatZinc statistics:
+%%%mzn-stat: paths=0
+%%%mzn-stat: flatBoolVars=18296
+%%%mzn-stat: flatIntVars=9624
+%%%mzn-stat: flatSetVars=29
+%%%mzn-stat: flatBoolConstraints=10483
+%%%mzn-stat: flatIntConstraints=18646
+%%%mzn-stat: flatSetConstraints=954
+%%%mzn-stat: evaluatedReifiedConstraints=9602
+%%%mzn-stat: evaluatedHalfReifiedConstraints=580
+%%%mzn-stat: eliminatedImplications=590
+%%%mzn-stat: method="satisfy"
+%%%mzn-stat: flatTime=0.207351
+%%%mzn-stat-end
+[{8,15}, {1,4,12,17,21,26}, {6,19,23,29}, {10,25}, {7,16}, {11,22,24,30}, {9,14,27}, {18,20}, {3,5,13}, {2,28}]
+----------
+%%%mzn-stat: initTime=0.0883774
+%%%mzn-stat: solveTime=206.729
+%%%mzn-stat: solutions=1
+%%%mzn-stat: variables=27949
+%%%mzn-stat: propagators=29350
+%%%mzn-stat: propagations=1846103051
+%%%mzn-stat: nodes=1692876
+%%%mzn-stat: failures=846426
+%%%mzn-stat: restarts=0
+%%%mzn-stat: peakDepth=53
+%%%mzn-stat-end
+%%%mzn-stat: nSolutions=1
+%%%mzn-stat-end
+
+
+
+TEST 11
+% Generated FlatZinc statistics:
+%%%mzn-stat: paths=0
+%%%mzn-stat: flatBoolVars=19430
+%%%mzn-stat: flatIntVars=10200
+%%%mzn-stat: flatSetVars=29
+%%%mzn-stat: flatBoolConstraints=11110
+%%%mzn-stat: flatIntConstraints=19780
+%%%mzn-stat: flatSetConstraints=954
+%%%mzn-stat: evaluatedReifiedConstraints=10160
+%%%mzn-stat: evaluatedHalfReifiedConstraints=580
+%%%mzn-stat: eliminatedImplications=590
+%%%mzn-stat: method="satisfy"
+%%%mzn-stat: flatTime=0.191461
+%%%mzn-stat-end
+[{22,28}, {20,30}, {18,26}, {11,17}, {7,14,21,29}, {5,23}, {4,8,16,24}, {3,6}, {2,13,15,27}, {1,9,10,12,19,25}]
+----------
+%%%mzn-stat: initTime=0.0909956
+%%%mzn-stat: solveTime=0.0634545
+%%%mzn-stat: solutions=1
+%%%mzn-stat: variables=29659
+%%%mzn-stat: propagators=31254
+%%%mzn-stat: propagations=436848
+%%%mzn-stat: nodes=270
+%%%mzn-stat: failures=125
+%%%mzn-stat: restarts=0
+%%%mzn-stat: peakDepth=34
+%%%mzn-stat-end
+%%%mzn-stat: nSolutions=1
+%%%mzn-stat-end
+
+
+
+TEST 12
+% Generated FlatZinc statistics:
+%%%mzn-stat: paths=0
+%%%mzn-stat: flatBoolVars=17036
+%%%mzn-stat: flatIntVars=8984
+%%%mzn-stat: flatSetVars=29
+%%%mzn-stat: flatBoolConstraints=9822
+%%%mzn-stat: flatIntConstraints=17386
+%%%mzn-stat: flatSetConstraints=954
+%%%mzn-stat: evaluatedReifiedConstraints=8982
+%%%mzn-stat: evaluatedHalfReifiedConstraints=580
+%%%mzn-stat: eliminatedImplications=590
+%%%mzn-stat: method="satisfy"
+%%%mzn-stat: flatTime=0.19425
+%%%mzn-stat-end
+[{1,13,21,26}, {2,4}, {3,17}, {5,8,15,25}, {24,27}, {9,19}, {6,10,18,28}, {11,23}, {7,14,20,30}, {12,16,22,29}]
+----------
+%%%mzn-stat: initTime=0.0831196
+%%%mzn-stat: solveTime=39.871
+%%%mzn-stat: solutions=1
+%%%mzn-stat: variables=26049
+%%%mzn-stat: propagators=27272
+%%%mzn-stat: propagations=346803165
+%%%mzn-stat: nodes=352230
+%%%mzn-stat: failures=176105
+%%%mzn-stat: restarts=0
+%%%mzn-stat: peakDepth=56
+%%%mzn-stat-end
+%%%mzn-stat: nSolutions=1
+%%%mzn-stat-end
+
+
+
+TEST 13
+% Generated FlatZinc statistics:
+%%%mzn-stat: paths=0
+%%%mzn-stat: flatBoolVars=18484
+%%%mzn-stat: flatIntVars=9719
+%%%mzn-stat: flatSetVars=29
+%%%mzn-stat: flatBoolConstraints=10500
+%%%mzn-stat: flatIntConstraints=18834
+%%%mzn-stat: flatSetConstraints=954
+%%%mzn-stat: evaluatedReifiedConstraints=9695
+%%%mzn-stat: evaluatedHalfReifiedConstraints=580
+%%%mzn-stat: eliminatedImplications=590
+%%%mzn-stat: method="satisfy"
+%%%mzn-stat: flatTime=0.194941
+%%%mzn-stat-end
+[{2,7,14,24}, {1,6}, {4,9}, {5,12,25,29}, {11,16,20}, {3,8,15}, {10,17,26}, {13,19,23,30}, {21,27}, {18,22,28}]
+----------
+%%%mzn-stat: initTime=0.089341
+%%%mzn-stat: solveTime=12.6073
+%%%mzn-stat: solutions=1
+%%%mzn-stat: variables=28232
+%%%mzn-stat: propagators=29568
+%%%mzn-stat: propagations=109997775
+%%%mzn-stat: nodes=114420
+%%%mzn-stat: failures=57199
+%%%mzn-stat: restarts=0
+%%%mzn-stat: peakDepth=63
+%%%mzn-stat-end
+%%%mzn-stat: nSolutions=1
+%%%mzn-stat-end
+
+
+

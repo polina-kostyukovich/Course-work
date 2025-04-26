@@ -51,6 +51,7 @@ struct InputData {
     std::shared_ptr<std::vector<Aircraft>> aircrafts;
     std::shared_ptr<std::vector<Airport>> airports;
     int hours_in_cycle;
+    int hour_size;
 };
 
 struct SolutionCorrectnessInfo {

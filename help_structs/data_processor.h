@@ -27,9 +27,11 @@ std::vector<int> GetTimePointsArrayForILP(const std::unique_ptr<InputData>& inpu
 
 namespace heuristic {
 
-std::vector<int> GetTimePointsArrayForHeuristic(const std::shared_ptr<std::vector<Flight>>& flights);
+std::vector<int> GetTimePointsArrayForHeuristic(const std::shared_ptr<std::vector<Flight>>& flights,
+                                                int hour_size);
 
 void ReplaceTimePointsWithIndices(std::shared_ptr<std::vector<Flight>>& flights,
-                                  const std::vector<int>& time_points);
+                                  const std::vector<int>& time_points,
+                                  int hour_size);
 
 }

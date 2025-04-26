@@ -1,0 +1,19 @@
+start_time = 0;
+finish_time = 10080;
+hour_size = 60;
+
+flights_number = 16;
+aircrafts_number = 6;
+airports_number = 5;
+
+flights_departure_points = [4, 1, 2, 5, 4, 5, 5, 3, 3, 4, 5, 5, 4, 5, 3, 3];
+flights_arrival_points = [1, 4, 3, 3, 5, 4, 4, 5, 5, 5, 3, 4, 5, 3, 2, 5];
+flights_departure_times = [355, 917, 2532, 2663, 3531, 4311, 4936, 5129, 5575, 6753, 7039, 7376, 7515, 7566, 8344, 9700];
+flights_arrival_times = [564, 1126, 2780, 2925, 3728, 4508, 5133, 5391, 5837, 6950, 7301, 7573, 7712, 7828, 8592, 9962];
+flights_distances = [1238, 1238, 1786, 1984, 1065, 1065, 1065, 1984, 1984, 1065, 1984, 1065, 1065, 1984, 1786, 1984];
+flights_min_passangers = [419, 419, 237, 228, 571, 276, 589, 445, 228, 276, 426, 571, 589, 445, 237, 426];
+
+aircrafts_seats = [888, 888, 888, 958, 958, 958];
+aircrafts_costs = [3, 3, 3, 1, 1, 1];
+
+airports_costs = [4, 2, 10, 1, 9];

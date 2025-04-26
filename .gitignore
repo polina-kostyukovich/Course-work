@@ -2,3 +2,9 @@
 /cmake-build-release/
 /.idea/
 /data_generation/.idea/
+/python/.idea/
+/python/creds.json
+/python/compare_cp/
+/python/.DS_Store
+.DS_Store
+/bad_tests/.DS_Store

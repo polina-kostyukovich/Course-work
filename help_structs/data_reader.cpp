@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <Poco/JSON/JSON.h>
+#include <Poco/JSON/Object.h>
 #include <Poco/JSON/Parser.h>
 
 using namespace Poco::JSON;
@@ -40,6 +41,7 @@ std::unique_ptr<InputData> DataReader::ReadData() const {
     int flights_number = pObject->getValue<int>("flights number");
     int aircrafts_number = pObject->getValue<int>("aircrafts number");
     int hours_in_cycle = pObject->getValue<int>("hours in cycle");
+    int hour_size = pObject->getValue<int>("hour size");
 
     std::ifstream read_data(data_filename_);
     std::string data_json_string;
@@ -57,32 +59,33 @@ std::unique_ptr<InputData> DataReader::ReadData() const {
     data->flights->reserve(flights_number);
     for (int i = 0; i < flights_number; ++i) {
         auto flight = flights_json->getObject(i);
-        data->flights->emplace_back(flight->getValue<int>("id"),
+        data->flights->push_back({flight->getValue<int>("id"),
                                     flight->getValue<int>("departure airport"),
                                     flight->getValue<int>("arrival airport"),
                                     flight->getValue<int>("departure time"),
                                     flight->getValue<int>("arrival time"),
                                     flight->getValue<int>("distance"),
-                                    flight->getValue<int>("min passengers"));
+                                    flight->getValue<int>("min passengers")});
     }
 
     Array::Ptr aircrafts_json = pObject->get("aircrafts").extract<Array::Ptr>();
     data->aircrafts->reserve(aircrafts_number);
     for (int i = 0; i < aircrafts_number; ++i) {
         auto aircraft = aircrafts_json->getObject(i);
-        data->aircrafts->emplace_back(aircraft->getValue<int>("id"),
+        data->aircrafts->push_back({aircraft->getValue<int>("id"),
                                       aircraft->getValue<int>("seats"),
-                                      aircraft->getValue<int>("flight cost"));
+                                      aircraft->getValue<int>("flight cost")});
     }
 
     Array::Ptr airports_json = pObject->get("airports").extract<Array::Ptr>();
     data->airports->reserve(airports_number);
     for (int i = 0; i < airports_number; ++i) {
         auto airport = airports_json->getObject(i);
-        data->airports->emplace_back(airport->getValue<int>("id"),
-                                     airport->getValue<int>("stay cost"));
+        data->airports->push_back({airport->getValue<int>("id"),
+                                     airport->getValue<int>("stay cost")});
     }
 
     data->hours_in_cycle = hours_in_cycle;
+    data->hour_size = hour_size;
     return data;
 }

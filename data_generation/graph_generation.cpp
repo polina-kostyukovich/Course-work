@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
     }
     generator.seed(seed);
 
-    std::ifstream read("../data/vertices_degrees.txt");
+    std::ifstream read("vertices_degrees.txt");
     int airports_number;
     read >> airports_number;
     vertices_degrees = std::vector<int>(airports_number);
@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
     if (!FindGraph()) {
         std::cout << "not found\n";
     } else {
-        std::ofstream write("../data/graph.txt");
+        std::ofstream write("graph.txt");
         for (auto& edges_list : graph) {
             for (auto edges_number : edges_list) {
                 write << edges_number << ' ';

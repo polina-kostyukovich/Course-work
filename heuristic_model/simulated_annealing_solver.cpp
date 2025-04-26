@@ -16,11 +16,12 @@ SimulatedAnnealingSolver::SimulatedAnnealingSolver(const std::unique_ptr<InputDa
       aircrafts_number_(input_data->aircrafts->size()),
       iterations_number_(iterations_number),
       temperature_function_(temperature_function) {
-    auto time_points = heuristic::GetTimePointsArrayForHeuristic(input_data->flights);
-    heuristic::ReplaceTimePointsWithIndices(input_data->flights, time_points);
+    auto time_points = heuristic::GetTimePointsArrayForHeuristic(input_data->flights, input_data->hour_size);
+    heuristic::ReplaceTimePointsWithIndices(input_data->flights, time_points, input_data->hour_size);
     model_ = HeuristicModel(input_data->aircrafts,
                             input_data->airports,
                             input_data->hours_in_cycle,
+                            input_data->hour_size,
                             time_points);
 }
 

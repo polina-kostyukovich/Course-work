@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <Poco/JSON/JSON.h>
+#include <Poco/JSON/Object.h>
 #include <Poco/JSON/Parser.h>
 
 #include "../help_structs/entities.h"
@@ -57,7 +58,7 @@ int main(int argc, char** argv) {
 
     auto degrees = GetRandomVerticesDegrees(airports_number, degrees_sum, seed);
 
-    std::ofstream write("../data/vertices_degrees.txt");
+    std::ofstream write("vertices_degrees.txt");
     write << airports_number << '\n';
     for (auto degree : degrees) {
         write << degree << ' ';

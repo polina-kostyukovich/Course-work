@@ -1,0 +1,202 @@
+{
+  "flights": [
+    {
+      "id": 0,
+      "departure airport": 0,
+      "arrival airport": 2,
+      "departure time": 7658,
+      "arrival time": 7797,
+      "distance": 1936,
+      "min passengers": 245
+    },
+    {
+      "id": 1,
+      "departure airport": 2,
+      "arrival airport": 0,
+      "departure time": 6347,
+      "arrival time": 6486,
+      "distance": 1936,
+      "min passengers": 245
+    },
+    {
+      "id": 2,
+      "departure airport": 0,
+      "arrival airport": 4,
+      "departure time": 9017,
+      "arrival time": 9071,
+      "distance": 744,
+      "min passengers": 502
+    },
+    {
+      "id": 3,
+      "departure airport": 4,
+      "arrival airport": 0,
+      "departure time": 517,
+      "arrival time": 571,
+      "distance": 744,
+      "min passengers": 502
+    },
+    {
+      "id": 4,
+      "departure airport": 1,
+      "arrival airport": 3,
+      "departure time": 1450,
+      "arrival time": 1526,
+      "distance": 1053,
+      "min passengers": 216
+    },
+    {
+      "id": 5,
+      "departure airport": 3,
+      "arrival airport": 1,
+      "departure time": 7458,
+      "arrival time": 7534,
+      "distance": 1053,
+      "min passengers": 216
+    },
+    {
+      "id": 6,
+      "departure airport": 1,
+      "arrival airport": 4,
+      "departure time": 9557,
+      "arrival time": 9652,
+      "distance": 1326,
+      "min passengers": 335
+    },
+    {
+      "id": 7,
+      "departure airport": 4,
+      "arrival airport": 1,
+      "departure time": 9590,
+      "arrival time": 9685,
+      "distance": 1326,
+      "min passengers": 335
+    },
+    {
+      "id": 8,
+      "departure airport": 2,
+      "arrival airport": 3,
+      "departure time": 8139,
+      "arrival time": 8265,
+      "distance": 1762,
+      "min passengers": 230
+    },
+    {
+      "id": 9,
+      "departure airport": 3,
+      "arrival airport": 2,
+      "departure time": 6444,
+      "arrival time": 6570,
+      "distance": 1762,
+      "min passengers": 230
+    },
+    {
+      "id": 10,
+      "departure airport": 2,
+      "arrival airport": 4,
+      "departure time": 8399,
+      "arrival time": 8512,
+      "distance": 1571,
+      "min passengers": 474
+    },
+    {
+      "id": 11,
+      "departure airport": 4,
+      "arrival airport": 2,
+      "departure time": 5823,
+      "arrival time": 5936,
+      "distance": 1571,
+      "min passengers": 474
+    },
+    {
+      "id": 12,
+      "departure airport": 3,
+      "arrival airport": 4,
+      "departure time": 6600,
+      "arrival time": 6688,
+      "distance": 1220,
+      "min passengers": 515
+    },
+    {
+      "id": 13,
+      "departure airport": 4,
+      "arrival airport": 3,
+      "departure time": 1963,
+      "arrival time": 2051,
+      "distance": 1220,
+      "min passengers": 515
+    },
+    {
+      "id": 14,
+      "departure airport": 3,
+      "arrival airport": 4,
+      "departure time": 1024,
+      "arrival time": 1112,
+      "distance": 1220,
+      "min passengers": 331
+    },
+    {
+      "id": 15,
+      "departure airport": 4,
+      "arrival airport": 3,
+      "departure time": 6549,
+      "arrival time": 6637,
+      "distance": 1220,
+      "min passengers": 331
+    }
+  ],
+  "aircrafts": [
+    {
+      "id": 0,
+      "seats": 882,
+      "flight cost": 2
+    },
+    {
+      "id": 1,
+      "seats": 882,
+      "flight cost": 2
+    },
+    {
+      "id": 2,
+      "seats": 882,
+      "flight cost": 2
+    },
+    {
+      "id": 3,
+      "seats": 882,
+      "flight cost": 2
+    },
+    {
+      "id": 4,
+      "seats": 882,
+      "flight cost": 2
+    },
+    {
+      "id": 5,
+      "seats": 882,
+      "flight cost": 2
+    }
+  ],
+  "airports": [
+    {
+      "id": 0,
+      "stay cost": 1
+    },
+    {
+      "id": 1,
+      "stay cost": 9
+    },
+    {
+      "id": 2,
+      "stay cost": 2
+    },
+    {
+      "id": 3,
+      "stay cost": 9
+    },
+    {
+      "id": 4,
+      "stay cost": 3
+    }
+  ]
+}

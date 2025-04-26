@@ -12,9 +12,13 @@ LocalSearchSolver::LocalSearchSolver(const std::unique_ptr<InputData>& input_dat
       allow_no_aircraft_(allow_no_aircraft),
       aircrafts_number_(input_data->aircrafts->size()),
       iterations_number_(iterations_number) {
-    auto time_points = heuristic::GetTimePointsArrayForHeuristic(input_data->flights);
-    heuristic::ReplaceTimePointsWithIndices(input_data->flights, time_points);
-    model_ = HeuristicModel(input_data->aircrafts, input_data->airports, input_data->hours_in_cycle, time_points);
+    auto time_points = heuristic::GetTimePointsArrayForHeuristic(input_data->flights, input_data->hour_size);
+    heuristic::ReplaceTimePointsWithIndices(input_data->flights, time_points, input_data->hour_size);
+    model_ = HeuristicModel(input_data->aircrafts,
+                            input_data->airports,
+                            input_data->hours_in_cycle,
+                            input_data->hour_size,
+                            time_points);
 }
 
 std::pair<std::vector<int>, double> LocalSearchSolver::Solve(const std::vector<int>& initial_solution) {

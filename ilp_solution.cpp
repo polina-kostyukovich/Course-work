@@ -248,15 +248,15 @@ std::vector<double> GetTargetCoefficients(const std::unique_ptr<InputData>& inpu
         for (size_t l = 0; l < l_number; ++l) {
             auto index = indices_converter.ConvertAIndex(l, j, 0);
             target_coefficients[index] = (*input_data->airports)[l].stay_cost
-                * (processed_data->time_points[1] - processed_data->time_points[0] + 1);
+                * (processed_data->time_points[1] - processed_data->time_points[0] + input_data->hour_size);
             for (size_t k = 1; k < k_number - 1; ++k) {
                 index = indices_converter.ConvertAIndex(l, j, k);
                 target_coefficients[index] = (*input_data->airports)[l].stay_cost
-                    * (processed_data->time_points[k + 1] - processed_data->time_points[k] + 2);
+                    * (processed_data->time_points[k + 1] - processed_data->time_points[k] + 2 * input_data->hour_size);
             }
             index = indices_converter.ConvertAIndex(l, j, k_number - 1);
             target_coefficients[index] = (*input_data->airports)[l].stay_cost
-                * (processed_data->time_points[k_number] - processed_data->time_points[k_number - 1] + 1);
+                * (processed_data->time_points[k_number] - processed_data->time_points[k_number - 1] + input_data->hour_size);
         }
     }
 

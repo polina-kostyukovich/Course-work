@@ -18,6 +18,7 @@ public:
     HeuristicModel(const std::shared_ptr<std::vector<Aircraft>>& aircrafts,
                    const std::shared_ptr<std::vector<Airport>>& airports,
                    int hours_in_cycle,
+                   int hour_size,
                    const std::vector<int>& time_points);
 
     void SetAircraftToFlight(int aircraft, const Flight& flight);
@@ -47,8 +48,12 @@ private:
     public:
          AircraftEndPoints(const std::shared_ptr<std::vector<Airport>>& airports,
                            int hours_in_cycle,
+                           int hour_size,
                            const std::vector<int>& time_points)
-            : airports_(airports), hours_in_cycle_(hours_in_cycle), time_points_(time_points) {}
+            : airports_(airports)
+            , hours_in_cycle_(hours_in_cycle)
+            , hour_size_(hour_size)
+            , time_points_(time_points) {}
 
         void SetFlight(const Flight& flight);
         void RemoveFlight(const Flight& flight);
@@ -98,6 +103,7 @@ private:
         int mismatches_number_{0};
         int stay_cost_{0};
         int hours_in_cycle_;
+        int hour_size_;
     };
 
     class FlightsCost {

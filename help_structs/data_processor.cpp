@@ -30,8 +30,8 @@ std::vector<int> GetTimePointsArrayForILP(const std::unique_ptr<InputData>& inpu
     departure_times.reserve(input_data->flights->size());
     arrival_times.reserve(input_data->flights->size());
     for (auto& flight : (*input_data->flights)) {
-        departure_times.push_back(flight.departure_time - 1);
-        arrival_times.push_back(flight.arrival_time + 1);
+        departure_times.push_back(flight.departure_time - input_data->hour_size);
+        arrival_times.push_back(flight.arrival_time + input_data->hour_size);
     }
 
     std::sort(departure_times.begin(), departure_times.end());
@@ -98,12 +98,12 @@ std::unique_ptr<ProcessedData> GetProcessedData(const std::unique_ptr<InputData>
         auto flight = (*input_data->flights)[i];
         auto departure_time_index = std::upper_bound(processed_data->time_points.begin(),
                                                      processed_data->time_points.end(),
-                                                     flight.departure_time - 1)
+                                                     flight.departure_time - input_data->hour_size)
             - processed_data->time_points.begin() - 1;
 
         auto arrival_time_index = std::lower_bound(processed_data->time_points.begin(),
                                                    processed_data->time_points.end(),
-                                                   flight.arrival_time + 1)
+                                                   flight.arrival_time + input_data->hour_size)
             - processed_data->time_points.begin();
 
         for (auto j = departure_time_index; j < arrival_time_index; ++j) {
@@ -136,12 +136,13 @@ std::unique_ptr<ProcessedData> GetProcessedData(const std::unique_ptr<InputData>
 
 namespace heuristic {
 
-std::vector<int> GetTimePointsArrayForHeuristic(const std::shared_ptr<std::vector<Flight>>& flights) {
+std::vector<int> GetTimePointsArrayForHeuristic(const std::shared_ptr<std::vector<Flight>>& flights,
+                                                int hour_size) {
     std::vector<int> time_points;
     time_points.reserve(2 * flights->size());
     for (auto& flight : (*flights)) {
-        time_points.push_back(flight.departure_time - 1);
-        time_points.push_back(flight.arrival_time + 1);
+        time_points.push_back(flight.departure_time - hour_size);
+        time_points.push_back(flight.arrival_time + hour_size);
     }
 
     std::sort(time_points.begin(), time_points.end());
@@ -151,14 +152,15 @@ std::vector<int> GetTimePointsArrayForHeuristic(const std::shared_ptr<std::vecto
 }
 
 void ReplaceTimePointsWithIndices(std::shared_ptr<std::vector<Flight>>& flights,
-                                  const std::vector<int>& time_points) {
+                                  const std::vector<int>& time_points,
+                                  int hour_size) {
     for (auto& flight : *flights) {
         auto departure_index = std::lower_bound(time_points.begin(),
                                                 time_points.end(),
-                                                flight.departure_time - 1) - time_points.begin();
+                                                flight.departure_time - hour_size) - time_points.begin();
         auto arrival_index = std::lower_bound(time_points.begin(),
                                               time_points.end(),
-                                              flight.arrival_time + 1) - time_points.begin();
+                                              flight.arrival_time + hour_size) - time_points.begin();
         flight.departure_time = departure_index;
         flight.arrival_time = arrival_index;
     }
